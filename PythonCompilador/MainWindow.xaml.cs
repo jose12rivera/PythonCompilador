@@ -68,7 +68,19 @@ namespace PythonCompilador
                 ("Python", new Regex(@"^pass\s*", RegexOptions.IgnoreCase)),
                 ("Python", new Regex(@"^raise\s+.*", RegexOptions.IgnoreCase)),
                 ("Python", new Regex(@"^with\s+.*:", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^yield\s+.*", RegexOptions.IgnoreCase))
+                ("Python", new Regex(@"^yield\s+.*", RegexOptions.IgnoreCase)),
+                ("Python", new Regex(@"\bFalse\b", RegexOptions.IgnoreCase)),
+                ("Python", new Regex(@"\bNone\b", RegexOptions.IgnoreCase)),
+                ("Python", new Regex(@"\bTrue\b", RegexOptions.IgnoreCase)),
+                ("Python", new Regex(@"\band\b", RegexOptions.IgnoreCase)),
+                ("Python", new Regex(@"\bas\b", RegexOptions.IgnoreCase)),
+                ("Python", new Regex(@"\basync\b", RegexOptions.IgnoreCase)),
+                ("Python", new Regex(@"\bawait\b", RegexOptions.IgnoreCase)),
+                ("Python", new Regex(@"\bin\b", RegexOptions.IgnoreCase)),
+                ("Python", new Regex(@"\bis\b", RegexOptions.IgnoreCase)),
+                ("Python", new Regex(@"\blambda\b", RegexOptions.IgnoreCase)),
+                ("Python", new Regex(@"\bnot\b", RegexOptions.IgnoreCase)),
+                ("Python", new Regex(@"\bor\b", RegexOptions.IgnoreCase))
             };
         }
 
