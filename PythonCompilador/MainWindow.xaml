@@ -6,20 +6,24 @@
         xmlns:local="clr-namespace:PythonCompilador"
         mc:Ignorable="d"
         Title="Python Compiler" Height="700" Width="1221" MinHeight="700" MinWidth="1221" ResizeMode="CanMinimize" WindowStartupLocation="CenterScreen">
-    
+
     <Grid Background="BlueViolet">
-        <StackPanel VerticalAlignment="Top" Margin="30">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="199*"/>
+            <ColumnDefinition Width="1022*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel VerticalAlignment="Top" Margin="30,30,30,0" Grid.ColumnSpan="2">
             <Label HorizontalAlignment="Center" Content="Python Compiler" FontWeight="DemiBold" FontSize="40" Foreground="Orange"></Label>
         </StackPanel>
-        <StackPanel Orientation="Horizontal">
+        <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2">
             <TextBox x:Name="CodeTextBox" TextWrapping="Wrap" AcceptsReturn="True" Margin="10,150,0,103" Width="590" FontFamily="Consolas" FontSize="18" Foreground="#F6F6F6" Background="Red" />
             <TextBox x:Name="ResultTextBlock" TextWrapping="Wrap" Margin="0,150,10,103" Background="#424242" Width="590" FontFamily="Consolas" FontSize="20" Foreground="#F6F6F6" IsEnabled="False"/>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" Margin="10,100,10,0">
+        <StackPanel Orientation="Horizontal" Margin="10,100,10,0" Grid.ColumnSpan="2">
             <Label Content="Code" FontSize="30" Foreground="White" />
             <Label Content="Result" FontSize="30" Margin="510,0" Foreground="White"/>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="40">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="262,0,0,40" Grid.Column="1">
             <Button Width="150" Height="50" Content="Analyze" FontSize="30" VerticalAlignment="Bottom" HorizontalAlignment="Center" Background="Green" BorderBrush="Green" Foreground="White" FontFamily="Dubai Medium" Click="OnAnalyzeClick" />
             <Button Width="150" Height="50" Content="Clean" FontSize="30" VerticalAlignment="Bottom" HorizontalAlignment="Center" Background="#F44336" BorderBrush="#D32F2F" Foreground="#FFFFFF" FontFamily="Dubai Medium" Click="OnClearScreenClick" />
         </StackPanel>
