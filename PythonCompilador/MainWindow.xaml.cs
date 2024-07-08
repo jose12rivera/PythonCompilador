@@ -1,36 +1,35 @@
 ﻿using System; // Importa el espacio de nombres System y métodos básicos de .NET.
 using System.Collections.Generic; // proporciona clases genéricas como List<T>.
-using System.IO; //proporciona clases para trabajar con archivos y flujos de datos.
+using System.IO; // proporciona clases para trabajar con archivos y flujos de datos.
 using System.Text; // La clases para trabajar con codificaciones y manipulaciones de texto.
-using System.Text.RegularExpressions; //proporciona clases para trabajar con expresiones regulares.
+using System.Text.RegularExpressions; // proporciona clases para trabajar con expresiones regulares.
 using System.Windows; // La clases para crear aplicaciones de Windows Presentation Foundation (WPF).
 using IronPython.Hosting; // proporciona clases para hospedar y ejecutar scripts de IronPython en aplicaciones .NET.
-using Microsoft.Scripting.Hosting; //proporciona clases para el motor de scripting y el entorno de ejecución.
+using Microsoft.Scripting.Hosting; // proporciona clases para el motor de scripting y el entorno de ejecución.
 
 namespace PythonCompilador
 {
-    public class SyntaxAnalyzer
+    public class AnalizadorSintaxis // SyntaxAnalyzer
     {
-        private ScriptEngine engine; // Instancia del motor de scripting de Python
-        private ScriptScope scope; // Ámbito de ejecución para el código Python
-        private StringBuilder outputBuilder; // StringBuilder para capturar la salida del código Python
-        private List<(string language, Regex pattern)> languagePatterns; // Lista de patrones de sintaxis
+        private ScriptEngine motor; // Instancia del motor de scripting de Python
+        private ScriptScope alcance; // Ámbito de ejecución para el código Python
+        private StringBuilder constructorSalida; // StringBuilder para capturar la salida del código Python
+        private List<(string lenguaje, Regex patron)> patronesLenguaje; // Lista de patrones de sintaxis
 
-        public SyntaxAnalyzer()
+        public AnalizadorSintaxis() // SyntaxAnalyzer
         {
             // Crear una instancia del motor de scripting de Python
-            engine = Python.CreateEngine();
+            motor = Python.CreateEngine();
             // Crear un ámbito de ejecución para el código Python
-            scope = engine.CreateScope();
+            alcance = motor.CreateScope();
             // Inicializar el StringBuilder para capturar la salida del código Python
-            outputBuilder = new StringBuilder();
+            constructorSalida = new StringBuilder();
 
-            
-            var outputStream = new StringWriterStream(outputBuilder);// Crea un nuevo StringWriterStream pasando el StringBuilder.
-            engine.Runtime.IO.SetOutput(outputStream, Encoding.UTF8);// Redirigir la salida de Python a nuestro StringBuilder personalizado
+            var flujoSalida = new StreamEscritorString(constructorSalida); // Crea un nuevo StreamEscritorString pasando el StringBuilder.
+            motor.Runtime.IO.SetOutput(flujoSalida, Encoding.UTF8); // Redirigir la salida de Python a nuestro StringBuilder personalizado
 
             // Inicializar la lista de patrones de sintaxis
-            languagePatterns = new List<(string, Regex)>
+            patronesLenguaje = new List<(string, Regex)>
             {
                 ("Python", new Regex(@"^def\s+\w+\s*\(.*\)\s*:", RegexOptions.IgnoreCase)),
                 ("Python", new Regex(@"^if\s+.*:", RegexOptions.IgnoreCase)),
@@ -71,43 +70,45 @@ namespace PythonCompilador
             };
         }
 
-        public string Analyze(string code)
+        public string Analizar(string codigo) 
         {
-            foreach (var pattern in languagePatterns)
+            foreach (var patron in patronesLenguaje)
             {
-                if (pattern.pattern.IsMatch(code))
+                if (patron.patron.IsMatch(codigo))
                 {
                     try
                     {
                         // Compilar el código Python para detectar errores de sintaxis
-                        var source = engine.CreateScriptSourceFromString(code);
-                        source.Compile();
-                        return $"Compilación exitosa.\nLenguaje detectado: {pattern.language}\n\nCódigo ingresado:\n{code}";
+                        var fuente = motor.CreateScriptSourceFromString(codigo);
+                        fuente.Compile();
+                        return $"Compilación exitosa.\nLenguaje detectado: {patron.lenguaje}\n\nCódigo ingresado:\n{codigo}";
                     }
                     catch (Exception ex)
                     {
                         // Capturar y devolver cualquier error de compilación
-                        return $"Error de compilación:\n{ex.Message}\n\nCódigo ingresado:\n{code}";
+                        return $"Error de compilación:\n{ex.Message}\n\nCódigo ingresado:\n{codigo}";
                     }
                 }
             }
 
-            return $"Error de compilación. No se detectó sintaxis de Python.\n\nCódigo ingresado:\n{code}";
+            return $"Error de compilación. No se detectó sintaxis de Python.\n\nCódigo ingresado:\n{codigo}";
         }
 
-        public string ExecutePythonCode(string code)
+
+
+        public string EjecutarCodigoPython(string codigo) // ExecutePythonCode
         {
             try
             {
                 // Limpiar el StringBuilder antes de ejecutar el código
-                outputBuilder.Clear();
+                constructorSalida.Clear();
 
                 // Ejecutar el código Python
-                var source = engine.CreateScriptSourceFromString(code);
-                source.Execute(scope);
+                var fuente = motor.CreateScriptSourceFromString(codigo);
+                fuente.Execute(alcance);
 
                 // Retornar el resultado de la ejecución
-                return $"Ejecución exitosa.\n\nResultado de la ejecución:\n{outputBuilder.ToString()}";
+                return $"Ejecución exitosa.\n\nResultado de la ejecución:\n{constructorSalida.ToString()}";
             }
             catch (Exception ex)
             {
@@ -117,13 +118,13 @@ namespace PythonCompilador
         }
 
         // Clase personalizada que convierte un StringWriter a un Stream
-        private class StringWriterStream : Stream
+        private class StreamEscritorString : Stream 
         {
-            private StringBuilder _stringBuilder; // StringBuilder donde se almacenará la salida de Python
+            private StringBuilder _constructorString; // StringBuilder donde se almacenará la salida de Python
 
-            public StringWriterStream(StringBuilder stringBuilder)
+            public StreamEscritorString(StringBuilder constructorString)
             {
-                _stringBuilder = stringBuilder;
+                _constructorString = constructorString;
             }
 
             public override bool CanRead => false; // No se puede leer desde este Stream
@@ -139,7 +140,8 @@ namespace PythonCompilador
 
             public override void Flush()
             {
-                // No hay necesidad de hacer nada aquí
+                
+                return;
             }
 
             public override int Read(byte[] buffer, int offset, int count)
@@ -160,37 +162,37 @@ namespace PythonCompilador
             public override void Write(byte[] buffer, int offset, int count)
             {
                 // Convertir los bytes a cadena y añadirla al StringBuilder
-                var text = Encoding.UTF8.GetString(buffer, offset, count);
-                _stringBuilder.Append(text);
+                var texto = Encoding.UTF8.GetString(buffer, offset, count);
+                _constructorString.Append(texto);
             }
         }
     }
 
-    public partial class MainWindow : Window
+    public partial class VentanaPrincipal : Window // MainWindow
     {
-        private SyntaxAnalyzer analyzer; // Instancia de la clase SyntaxAnalyzer
+        private AnalizadorSintaxis analizador; // Instancia de la clase AnalizadorSintaxis
 
-        public MainWindow()
+        public VentanaPrincipal() // MainWindow
         {
             InitializeComponent(); // Inicializar los componentes de la interfaz de usuario
-            analyzer = new SyntaxAnalyzer(); // Crear una instancia de SyntaxAnalyzer
+            analizador = new AnalizadorSintaxis(); // Crear una instancia de AnalizadorSintaxis
         }
 
-        private void OnAnalyzeClick(object sender, RoutedEventArgs e)
+        private void AlHacerClickAnalizar(object sender, RoutedEventArgs e) // OnAnalyzeClick
         {
-            string code = CodeTextBox.Text; // Obtener el código ingresado por el usuario
+            string codigo = CuadroTextoCodigo.Text; // Obtener el código ingresado por el usuario
 
-            if (!string.IsNullOrWhiteSpace(code))
+            if (!string.IsNullOrWhiteSpace(codigo))
             {
                 // Analizar el código Python ingresado
-                string result = analyzer.Analyze(code);
-                ResultTextBlock.Text = result;
+                string resultado = analizador.Analizar(codigo);
+                BloqueTextoResultado.Text = resultado;
 
-                if (result.Contains("Compilación exitosa"))
+                if (resultado.Contains("Compilación exitosa"))
                 {
                     // Ejecutar el código Python si la compilación fue exitosa
-                    string executionResult = analyzer.ExecutePythonCode(code);
-                    ResultTextBlock.Text += $"\n\n{executionResult}";
+                    string resultadoEjecucion = analizador.EjecutarCodigoPython(codigo);
+                    BloqueTextoResultado.Text += $"\n\n{resultadoEjecucion}";
                 }
             }
             else
@@ -200,11 +202,11 @@ namespace PythonCompilador
             }
         }
 
-        private void OnClearScreenClick(object sender, RoutedEventArgs e)
+        private void AlHacerClickLimpiarPantalla(object sender, RoutedEventArgs e) // OnClearScreenClick
         {
             // Limpiar el cuadro de texto y el bloque de resultados
-            CodeTextBox.Text = string.Empty;
-            ResultTextBlock.Text = string.Empty;
+            CuadroTextoCodigo.Text = string.Empty;
+            BloqueTextoResultado.Text = string.Empty;
         }
     }
 }
