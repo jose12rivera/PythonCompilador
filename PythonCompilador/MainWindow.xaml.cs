@@ -1,212 +1,90 @@
-﻿using System; // Importa el espacio de nombres System y métodos básicos de .NET.
-using System.Collections.Generic; // proporciona clases genéricas como List<T>.
-using System.IO; // proporciona clases para trabajar con archivos y flujos de datos.
-using System.Text; // La clases para trabajar con codificaciones y manipulaciones de texto.
-using System.Text.RegularExpressions; // proporciona clases para trabajar con expresiones regulares.
-using System.Windows; // La clases para crear aplicaciones de Windows Presentation Foundation (WPF).
-using IronPython.Hosting; // proporciona clases para hospedar y ejecutar scripts de IronPython en aplicaciones .NET.
-using Microsoft.Scripting.Hosting; // proporciona clases para el motor de scripting y el entorno de ejecución.
+﻿using System;
+using System.IO;
+using System.Text;
+using IronPython.Hosting;
+using Microsoft.Scripting.Hosting;
+using System.Windows;
 
 namespace PythonCompilador
 {
-    public class AnalizadorSintaxis // SyntaxAnalyzer
+    public class AnalizadorSintaxis
     {
-        private ScriptEngine motor; // Instancia del motor de scripting de Python
-        private ScriptScope alcance; // Ámbito de ejecución para el código Python
-        private StringBuilder constructorSalida; // StringBuilder para capturar la salida del código Python
-        private List<(string lenguaje, Regex patron)> patronesLenguaje; // Lista de patrones de sintaxis
+        private ScriptEngine motor;
+        private ScriptScope alcance;
+        private StringBuilder constructorSalida;
 
-        public AnalizadorSintaxis() // SyntaxAnalyzer
+        public AnalizadorSintaxis()
         {
-            // Crear una instancia del motor de scripting de Python
             motor = Python.CreateEngine();
-            // Crear un ámbito de ejecución para el código Python
             alcance = motor.CreateScope();
-            // Inicializar el StringBuilder para capturar la salida del código Python
             constructorSalida = new StringBuilder();
 
-            var flujoSalida = new StreamEscritorString(constructorSalida); // Crea un nuevo StreamEscritorString pasando el StringBuilder.
-            motor.Runtime.IO.SetOutput(flujoSalida, Encoding.UTF8); // Redirigir la salida de Python a nuestro StringBuilder personalizado
-
-            // Inicializar la lista de patrones de sintaxis
-            patronesLenguaje = new List<(string, Regex)>
-            {
-                ("Python", new Regex(@"^def\s+\w+\s*\(.*\)\s*:", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^if\s+.*:", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^elif\s+.*:", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^else\s*:", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^for\s+\w+\s+in\s+\w+\s*:", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^while\s+.*:", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^try\s*:", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^except\s+.*:", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^finally\s*:", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^class\s+\w+\s*:", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^import\s+\w+", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^from\s+\w+\s+import\s+\w+", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^return\s+.*", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^print\s*\(.*\)", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^assert\s+.*", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^break\s*", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^continue\s*", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^del\s+.*", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^global\s+.*", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^nonlocal\s+.*", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^pass\s*", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^raise\s+.*", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^with\s+.*:", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"^yield\s+.*", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"\bFalse\b", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"\bNone\b", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"\bTrue\b", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"\band\b", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"\bas\b", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"\basync\b", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"\bawait\b", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"\bin\b", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"\bis\b", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"\blambda\b", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"\bnot\b", RegexOptions.IgnoreCase)),
-                ("Python", new Regex(@"\bor\b", RegexOptions.IgnoreCase))
-            };
+            var flujoSalida = new StreamEscritorString(constructorSalida);
+            motor.Runtime.IO.SetOutput(flujoSalida, Encoding.UTF8);
         }
 
-        public string Analizar(string codigo) 
-        {
-            foreach (var patron in patronesLenguaje)
-            {
-                if (patron.patron.IsMatch(codigo))
-                {
-                    try
-                    {
-                        // Compilar el código Python para detectar errores de sintaxis
-                        var fuente = motor.CreateScriptSourceFromString(codigo);
-                        fuente.Compile();
-                        return $"Compilación exitosa.\nLenguaje detectado: {patron.lenguaje}\n\nCódigo ingresado:\n{codigo}";
-                    }
-                    catch (Exception ex)
-                    {
-                        // Capturar y devolver cualquier error de compilación
-                        return $"Error de compilación:\n{ex.Message}\n\nCódigo ingresado:\n{codigo}";
-                    }
-                }
-            }
-
-            return $"Error de compilación. No se detectó sintaxis de Python.\n\nCódigo ingresado:\n{codigo}";
-        }
-
-
-
-        public string EjecutarCodigoPython(string codigo) // ExecutePythonCode
+        public string EjecutarCodigoPython(string codigo)
         {
             try
             {
-                // Limpiar el StringBuilder antes de ejecutar el código
                 constructorSalida.Clear();
-
-                // Ejecutar el código Python
                 var fuente = motor.CreateScriptSourceFromString(codigo);
                 fuente.Execute(alcance);
-
-                // Retornar el resultado de la ejecución
                 return $"Ejecución exitosa.\n\nResultado de la ejecución:\n{constructorSalida.ToString()}";
             }
             catch (Exception ex)
             {
-                // Capturar y devolver cualquier error durante la ejecución
                 return $"Error durante la ejecución del código: {ex.Message}";
             }
         }
 
-        // Clase personalizada que convierte un StringWriter a un Stream
-        private class StreamEscritorString : Stream 
+        private class StreamEscritorString : Stream
         {
-            private StringBuilder _constructorString; // StringBuilder donde se almacenará la salida de Python
+            private StringBuilder _builder;
 
-            public StreamEscritorString(StringBuilder constructorString)
+            public StreamEscritorString(StringBuilder builder)
             {
-                _constructorString = constructorString;
+                _builder = builder;
             }
 
-            public override bool CanRead => false; // No se puede leer desde este Stream
-            public override bool CanSeek => false; // No se puede buscar en este Stream
-            public override bool CanWrite => true; // Se puede escribir en este Stream
-            public override long Length => 0; // Longitud del Stream, no aplicable aquí
-
-            public override long Position
-            {
-                get => 0;
-                set => throw new NotSupportedException(); // No se admite la modificación de la posición
-            }
-
-            public override void Flush()
-            {
-                
-                return;
-            }
-
-            public override int Read(byte[] buffer, int offset, int count)
-            {
-                throw new NotSupportedException(); // No se admite la lectura
-            }
-
-            public override long Seek(long offset, SeekOrigin origin)
-            {
-                throw new NotSupportedException(); // No se admite la búsqueda
-            }
-
-            public override void SetLength(long value)
-            {
-                throw new NotSupportedException(); // No se admite la modificación de la longitud
-            }
-
+            public override bool CanRead => false;
+            public override bool CanSeek => false;
+            public override bool CanWrite => true;
+            public override long Length => 0;
+            public override long Position { get => 0; set => throw new NotSupportedException(); }
+            public override void Flush() { }
+            public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+            public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+            public override void SetLength(long value) => throw new NotSupportedException();
             public override void Write(byte[] buffer, int offset, int count)
             {
-                // Convertir los bytes a cadena y añadirla al StringBuilder
-                var texto = Encoding.UTF8.GetString(buffer, offset, count);
-                _constructorString.Append(texto);
+                var text = Encoding.UTF8.GetString(buffer, offset, count);
+                _builder.Append(text);
             }
         }
     }
 
-    public partial class VentanaPrincipal : Window // MainWindow
+    public partial class VentanaPrincipal : Window
     {
-        private AnalizadorSintaxis analizador; // Instancia de la clase AnalizadorSintaxis
+        private AnalizadorSintaxis analizador;
 
-        public VentanaPrincipal() // MainWindow
+        public VentanaPrincipal()
         {
-            InitializeComponent(); // Inicializar los componentes de la interfaz de usuario
-            analizador = new AnalizadorSintaxis(); // Crear una instancia de AnalizadorSintaxis
+            InitializeComponent();
+            analizador = new AnalizadorSintaxis();
         }
 
-        private void AlHacerClickAnalizar(object sender, RoutedEventArgs e) // OnAnalyzeClick
+        private void AlHacerClickAnalizar(object sender, RoutedEventArgs e)
         {
-            string codigo = CuadroTextoCodigo.Text; // Obtener el código ingresado por el usuario
-
-            if (!string.IsNullOrWhiteSpace(codigo))
-            {
-                // Analizar el código Python ingresado
-                string resultado = analizador.Analizar(codigo);
-                BloqueTextoResultado.Text = resultado;
-
-                if (resultado.Contains("Compilación exitosa"))
-                {
-                    // Ejecutar el código Python si la compilación fue exitosa
-                    string resultadoEjecucion = analizador.EjecutarCodigoPython(codigo);
-                    BloqueTextoResultado.Text += $"\n\n{resultadoEjecucion}";
-                }
-            }
-            else
-            {
-                // Mostrar un mensaje si el cuadro de texto está vacío
-                MessageBox.Show("Por favor ingresa el código a analizar.");
-            }
+            string codigo = CuadroTextoCodigo.Text;
+            string resultado = analizador.EjecutarCodigoPython(codigo);
+            BloqueTextoResultado.Text = resultado;
         }
 
-        private void AlHacerClickLimpiarPantalla(object sender, RoutedEventArgs e) // OnClearScreenClick
+        private void AlHacerClickLimpiarPantalla(object sender, RoutedEventArgs e)
         {
-            // Limpiar el cuadro de texto y el bloque de resultados
-            CuadroTextoCodigo.Text = string.Empty;
-            BloqueTextoResultado.Text = string.Empty;
+            CuadroTextoCodigo.Clear();
+            BloqueTextoResultado.Clear();
         }
     }
 }
